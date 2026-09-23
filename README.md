@@ -1,2 +1,68 @@
-# Parse_Nessus_Report
-Automatically parse the Nessus export into a full deliverable report
+# nessus2report
+
+nessus2report turns one or two Nessus scan exports into a finished Abacode EIVA report in Word format. It replaces the old workflow of exporting five files, running Auto-Rename.ps1 and Parse-Nessus.ps1, and copying findings out of the HTML by hand.
+
+The report template is built into the script, so the script is the only file you need. It never installs anything on your machine.
+
+## Setup
+
+Download the script and make it executable.
+
+```bash
+chmod +x nessus2report.sh
+```
+
+The script needs python3-lxml, which comes with Kali. LibreOffice is optional. If it is installed, the script uses it to fill in the Table of Contents page numbers. If it is not, Word fills them in when you open the report and click Yes to update fields.
+
+## What you need from Nessus
+
+Export each scan in the .nessus format and nothing else. The .nessus file already contains everything the report needs.
+
+## Example 1: Internal scan only
+
+```bash
+./nessus2report.sh -i internal.nessus -c "Acme Health Inc" -a ACME -r assessment
+```
+
+This fills the Internal (IVA) sections and removes the External sections from the report.
+
+## Example 2: Internal and External scans together
+
+```bash
+./nessus2report.sh -e external.nessus -i internal.nessus -c "Acme Health Inc" -a ACME -r assessment
+```
+
+This fills the External (EVA) and Internal (IVA) sections in a single report, with every finding from both scans listed in the Table of Contents.
+
+## Example 3: Just run it and answer the prompts
+
+```bash
+./nessus2report.sh
+```
+
+The script asks for the external file and the internal file, and you press Enter to skip either one. It then asks for the customer name, the abbreviation, whether this is an assessment or a scan, and whether to skip Informational findings.
+
+## Options
+
+| Flag | Meaning |
+|------|---------|
+| `-e` | External .nessus file |
+| `-i` | Internal .nessus file |
+| `-c` | Customer full name |
+| `-a` | Customer abbreviation, used in the header and body text |
+| `-r` | `assessment` or `scan`. A scan uses the title "Vulnerability Scan Report" and quarter-only dates in the scope table. |
+| `-d` | Custom cover date. The default is today's date. |
+| `-o` | Output file path. The default is a file next to the .nessus file, named like `ACME EIVA 2026 Q3.docx`. |
+| `-n` | Skip Informational findings without asking |
+
+Any option you leave out is asked for when the script runs.
+
+## What the script does for you
+
+The script fills in the customer name and abbreviation everywhere, including the header, and puts today's date on the cover. It counts findings by severity, builds the findings tables, and writes a detailed page for each finding. Each detailed page includes the description, the recommendation, and the affected assets listed as bullets.
+
+All SSL and TLS findings are combined into one "Multiple SSL/TLS Issues" finding. SMBv1 is raised to High, which matches the old Parse-Nessus behavior. A section with no findings shows "No Notable Findings". The scope table in Appendix B is filled from the scan targets and scan dates.
+
+## Before you send the report
+
+Open the report in Word and click Yes when it asks to update fields. Then replace the client logo on the cover and check the Appendix B testing dates against the assignment. Save it as a PDF as usual.
