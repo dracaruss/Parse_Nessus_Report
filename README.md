@@ -29,11 +29,15 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 
 The first command removes the "downloaded from the internet" mark from the file. The second command lets you run local scripts under your own user account, and it does not need administrator rights. After that, the script runs normally as `.\nessus2report.ps1`.
 
+Every time you download a new copy of the script, run `Unblock-File .\nessus2report.ps1` again, because the fresh download is marked as blocked too. The execution policy command only needs to be run once.
+
+If your machine is managed by a company Group Policy that forces script signing, the second command will be refused. In that case, run the script through a one-time bypass instead.
+
 ```powershell
-.\nessus2report.ps1 -i .\internal.nessus -c "Acme Health Inc" -a ACME -r assessment
+powershell -ExecutionPolicy Bypass -File .\nessus2report.ps1 -i .\internal.nessus -c "Acme Health Inc" -a ACME -r assessment
 ```
 
-_If Microsoft Word is installed, the Windows version fills in the Table of Contents page numbers itself. Otherwise, Word fills them in when you open the report and click Yes to update fields._
+If Microsoft Word is installed, the Windows version fills in the Table of Contents page numbers itself. Otherwise, Word fills them in when you open the report and click Yes to update fields.
 
 ## Example 1: Internal scan only
 
@@ -81,9 +85,9 @@ If a file name contains spaces, wrap it in quotes, for example `-i '.\VULN Scan 
 | `-i` | Internal .nessus file |
 | `-c` | Customer full name |
 | `-a` | Customer abbreviation, used in the header and body text |
-| `-r` | `assessment` or `scan`. A scan uses the title "Vulnerability Scan Report" and quarter-only dates in the scope table. |
+| `-r` | `assessment` or `scan`. An assessment produces the full report with a detailed page for every finding. A scan produces the shorter Executive Summary report with quarter dates and no detailed findings pages. |
 | `-d` | Custom cover date. The default is today's date. |
-| `-o` | Output file path. The default is a file next to the .nessus file, named like `ACME EIVA 2026 Q3.docx`. |
+| `-o` | Output file path. The default is a file next to the .nessus file, named like `ACME EIVA 2026 Q3.docx` for an assessment or `Abacode_Acme_Health_Inc_Executive_Summary_Report_Q3_2026.docx` for a scan. |
 | `-n` | Skip Informational findings without asking |
 | `-h` | Show the built-in help |
 
@@ -94,6 +98,10 @@ Any option you leave out is asked for when the script runs.
 The script fills in the customer name and abbreviation everywhere, including the header, and puts today's date on the cover. It counts findings by severity, builds the findings tables, and writes a detailed page for each finding, with every finding starting on a new page. Each detailed page includes the description, the recommendation, and the affected assets listed as bullets.
 
 All SSL and TLS findings are combined into one "Multiple SSL/TLS Issues" finding. SMBv1 is raised to High, which matches the old Parse-Nessus behavior. A section with no findings shows "No Notable Findings". The scope table in Appendix B is filled from the scan targets and scan dates.
+
+## Scan reports
+
+A scan report fills in the cover, the findings tables, and the Appendix B scope with quarter dates such as Q3 2026. In the Vulnerability Plus/Delta Overview table, the script fills in the current quarter row with this scan's totals. The highlighted row above it is where you paste the client's history from their previous report, since that history is not in the .nessus file.
 
 ## Before you send the report
 
