@@ -29,15 +29,13 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 
 The first command removes the "downloaded from the internet" mark from the file. The second command lets you run local scripts under your own user account, and it does not need administrator rights. After that, the script runs normally as `.\nessus2report.ps1`.
 
-Every time you download a new copy of the script, run `Unblock-File .\nessus2report.ps1` again, because the fresh download is marked as blocked too. The execution policy command only needs to be run once.
-
-If your machine is managed by a company Group Policy that forces script signing, the second command will be refused. In that case, run the script through a one-time bypass instead.
+_Every time you download a new copy of the script, run `Unblock-File .\nessus2report.ps1` again, because the fresh download is marked as blocked too. The execution policy command only needs to be run once._
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\nessus2report.ps1 -i .\internal.nessus -c "Acme Health Inc" -a ACME -r assessment
+.\nessus2report.ps1 -i .\internal.nessus -c "Acme Health Inc" -a ACME -r assessment
 ```
 
-If Microsoft Word is installed, the Windows version fills in the Table of Contents page numbers itself. Otherwise, Word fills them in when you open the report and click Yes to update fields.
+_If Microsoft Word is installed, the Windows version fills in the Table of Contents page numbers itself. Otherwise, Word fills them in when you open the report and click Yes to update fields._
 
 ## Example 1: Internal scan only
 
