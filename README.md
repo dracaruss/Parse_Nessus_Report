@@ -93,7 +93,7 @@ Any option you leave out is asked for when the script runs.
 
 The script fills in the customer name and abbreviation everywhere, including the header, and puts today's date on the cover. It counts findings by severity, builds the findings tables, and writes a detailed page for each finding, with every finding starting on a new page. Each detailed page includes the description, the recommendation, and the affected assets listed as bullets.
 
-All SSL and TLS findings are combined into one "Multiple SSL/TLS Issues" finding. SMBv1 is raised to High, which matches the old Parse-Nessus behavior. A section with no findings shows "No Notable Findings". The scope table in Appendix B is filled from the scan targets and scan dates.
+All SSL and TLS findings are combined into one "Multiple SSL/TLS Issues" finding. A section with no findings shows "No Notable Findings". The scope table in Appendix B is filled from the scan targets and scan dates.
 
 ## Scan reports
 
