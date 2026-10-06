@@ -1,6 +1,6 @@
 # nessus2report
 
-nessus2report turns one or two Nessus scan exports into a finished Abacode EIVA report in Word format. It replaces the old workflow of exporting five files, running Auto-Rename.ps1 and Parse-Nessus.ps1, and copying findings out of the HTML by hand.
+nessus2report turns one or two Nessus scan exports into a finished Abacode EIVA report in Word format, plus the customer folder of HTML reports that Parse-Nessus.ps1 used to produce. It replaces the old workflow of exporting five files, running Auto-Rename.ps1 and Parse-Nessus.ps1, and copying findings out of the HTML by hand.
 
 There are two versions that behave identically and use the same flags. Use `nessus2report.sh` on Kali and `nessus2report.ps1` on Windows. The report template is built into each script, so the script is the only file you need, and neither version installs anything on your machine.
 
@@ -16,7 +16,7 @@ Download the script and make it executable.
 chmod +x nessus2report.sh
 ```
 
-The script needs python3-lxml, which comes with Kali. LibreOffice is optional. If it is installed, the script uses it to fill in the Table of Contents page numbers. If it is not, Word fills them in when you open the report and click Yes to update fields.
+The script needs python3-lxml, which comes with Kali.
 
 ## Setup on Windows
 
@@ -29,11 +29,15 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 
 The first command removes the "downloaded from the internet" mark from the file. The second command lets you run local scripts under your own user account, and it does not need administrator rights. After that, the script runs normally as `.\nessus2report.ps1`.
 
+Every time you download a new copy of the script, run `Unblock-File .\nessus2report.ps1` again, because the fresh download is marked as blocked too. The execution policy command only needs to be run once.
+
+If your machine is managed by a company Group Policy that forces script signing, the second command will be refused. In that case, run the script through a one-time bypass instead.
+
 ```powershell
-.\nessus2report.ps1 -i .\internal.nessus -c "Acme Health Inc" -a ACME -r assessment
+powershell -ExecutionPolicy Bypass -File .\nessus2report.ps1 -i .\internal.nessus -c "Acme Health Inc" -a ACME -r assessment
 ```
 
-If Microsoft Word is installed, the Windows version fills in the Table of Contents page numbers itself. Otherwise, Word fills them in when you open the report and click Yes to update fields.
+If Microsoft Word is installed, the Windows version has Word set the exact Table of Contents page numbers.
 
 ## Example 1: Internal scan only
 
@@ -93,12 +97,22 @@ Any option you leave out is asked for when the script runs.
 
 The script fills in the customer name and abbreviation everywhere, including the header, and puts today's date on the cover. It counts findings by severity, builds the findings tables, and writes a detailed page for each finding, with every finding starting on a new page. Each detailed page includes the description, the recommendation, and the affected assets listed as bullets.
 
-All SSL and TLS findings are combined into one "Multiple SSL/TLS Issues" finding. A section with no findings shows "No Notable Findings". The scope table in Appendix B is filled from the scan targets and scan dates.
+All SSL and TLS findings are combined into one "Multiple SSL/TLS Issues" finding. SMBv1 is raised to High, which matches the old Parse-Nessus behavior. A section with no findings shows "No Notable Findings". The scope table in Appendix B is filled from the scan targets and scan dates.
+
+## Customer folders
+
+For each scan, the script also builds the same folder that Parse-Nessus.ps1 produced on Prod, named like `Acme Health Inc External EIVA 2026 Q3`, next to the Word report. It contains `index.html`, the `reportsbyhost` and `reportsbyvuln` pages, `extras\hostinfo.csv`, `extras\ipsbyvuln.txt`, the At-A-Glance chart, and the `css` and `js` folders. It always includes Informational findings, as the old process did with VulnReportIncludeLevel 6, even when you skip them in the Word report.
+
+On Windows the folder is byte for byte what the old script produced, because the script runs the original Parse-Nessus functions in Windows PowerShell 5.1. On Kali every page and CSV is also identical, except that `ipsbyvuln.txt` lists the same entries in a different order and the chart image is redrawn to look the same.
 
 ## Scan reports
 
 A scan report fills in the cover, the findings tables, and the Appendix B scope with quarter dates such as Q3 2026. In the Vulnerability Plus/Delta Overview table, the script fills in the current quarter row with this scan's totals. The highlighted row above it is where you paste the client's history from their previous report, since that history is not in the .nessus file.
 
+## Table of Contents page numbers
+
+The script calculates the page numbers itself. The front pages never move, a scan report only grows when the findings tables pass 21 rows, and in an assessment each finding starts on its own page, with longer findings estimated to take extra pages. A finding with an unusually long description or asset list can occasionally push the numbers after it by a page, so glance at the Table of Contents and adjust if needed.
+
 ## Before you send the report
 
-Open the report in Word and click Yes if it asks to update fields. Then replace the client logo on the cover and check the Appendix B testing dates against the assignment. Save it as a PDF as usual.
+Open the report in Word, glance at the Table of Contents page numbers, then replace the client logo on the cover and check the Appendix B testing dates against the assignment. Save it as a PDF as usual.
